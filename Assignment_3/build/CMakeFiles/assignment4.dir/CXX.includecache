@@ -1137,6 +1137,8 @@ vector
 -
 stack
 -
+queue
+-
 Eigen/Dense
 -
 Eigen/Geometry
