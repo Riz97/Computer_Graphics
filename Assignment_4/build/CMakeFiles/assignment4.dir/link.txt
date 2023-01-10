@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/assignment4.dir/src/main.cpp.o CMakeFiles/assignment4.dir/src/raster.cpp.o  -o assignment4 

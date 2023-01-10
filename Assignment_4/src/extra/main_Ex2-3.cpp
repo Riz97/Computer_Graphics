@@ -17,6 +17,7 @@
 using namespace std;
 
 // Read a triangle mesh from an off file
+//Load the same scene used in Assignment 3
 void load_off(const std::string &filename, Eigen::MatrixXf &V, Eigen::MatrixXi &F) {
     std::ifstream in(filename);
     std::string token;
@@ -55,10 +56,10 @@ int main() {
         Eigen::Vector4f Li = (uniform.light_position - out.position).normalized();
         Eigen::Vector4f N = out.normal;
 
-        // Diffuse contribution
+        // Diffuse 
         Eigen::Vector3f diffuse = uniform.diffuse_color * std::max(Li.dot(N), float(0));
 
-        // Specular contribution
+        // Specular 
         Eigen::Vector4f H = ((uniform.camera_position - out.position) +
                              (uniform.light_position - out.position)).normalized();
         Eigen::Vector3f specular =
@@ -105,6 +106,7 @@ int main() {
     uniform.shading_option = "Wireframe";
     uniform.transformation_option = false;
 
+    //Same values of assignment 2 json
     uniform.light_position = Eigen::Vector4f(0, 0, 5, 1);
     uniform.light_intensity = Eigen::Vector3f(20, 20, 20);
     uniform.diffuse_color = Eigen::Vector3f(0.5, 0.5, 0.5);
@@ -114,24 +116,29 @@ int main() {
     Eigen::Matrix4f M_orth;
     float l = -1, b = -1, n = -3;
     float r = 1, t = 1, f = -6;
-    M_orth << 2 / (r - l), 0, 0, -(r + l) / (r - l),
+    M_orth << 
+            2 / (r - l), 0, 0, -(r + l) / (r - l),
             0, 2 / (t - b), 0, -(t + b) / (t - b),
             0, 0, 2 / (n - f), -(n + f) / (n - f),
             0, 0, 0, 1;
 
     uniform.M_projection = M_orth;
 
-    Eigen::Vector3f E(0, 0, 5);  //camera position
+    Eigen::Vector3f E(0, 0, 5);  //camera position or the eye position
     Eigen::Vector3f G(0, 0, -1);   //gaze direction
     Eigen::Vector3f T(0, 1, 0);   //view up vector
 
     Eigen::Vector3f w = -G.normalized();
     Eigen::Vector3f u = T.cross(w).normalized();
     Eigen::Vector3f v = w.cross(u);
-    uniform.M_cam << u(0), v(0), w(0), E(0),
+
+    uniform.M_cam << 
+            u(0), v(0), w(0), E(0),
             u(1), v(1), w(1), E(1),
             u(2), v(2), w(2), E(2),
             0, 0, 0, 1;
+    
+    //Camera Matrix
     uniform.M_cam = uniform.M_cam.inverse().eval();
     uniform.camera_position << E(0), E(1), E(2), 1;
     uniform.light_position = uniform.M_cam * uniform.light_position;
@@ -144,16 +151,22 @@ int main() {
     load_off("../data/bunny.off", V, F);
     Eigen::Vector3f barycenter(V.col(0).sum() / V.rows(), V.col(1).sum() / V.rows(), V.col(2).sum() / V.rows());
 
+    //Translate the image in the origin of the coordinates
     Eigen::Matrix4f M_translation;
     M_translation << 1, 0, 0, -barycenter(0),
             0, 1, 0, -barycenter(1),
             0, 0, 1, -barycenter(2),
             0, 0, 0, 1;
+    
+    //Enlarge bunny by 5
     Eigen::Matrix4f M_scale;
-    M_scale << 7, 0, 0, 0,
-            0, 7, 0, 0,
-            0, 0, 7, 0,
+    M_scale << 
+            5, 0, 0, 0,
+            0, 5, 0, 0,
+            0, 0, 5, 0,
             0, 0, 0, 1;
+
+            //Model Matrix
     uniform.M_model = M_scale * M_translation;
 
     if (uniform.shading_option == "Wireframe") {
