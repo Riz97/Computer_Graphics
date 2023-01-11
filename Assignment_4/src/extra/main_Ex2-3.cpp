@@ -102,9 +102,10 @@ int main() {
                                          fa.depth);
         else return previous;
     };
+    
 
-    uniform.shading_option = "Wireframe";
-    uniform.transformation_option = false;
+    uniform.shading_option = "Per-Vertex"; // <---- Choose the shading desired (Wireframe , Flat , Per-Vertex)
+    uniform.transformation_option = true; // <---- Choose if you wish to produce gifs (true or false) 
 
     //Same values of assignment 2 json
     uniform.light_position = Eigen::Vector4f(0, 0, 5, 1);
@@ -116,6 +117,8 @@ int main() {
     Eigen::Matrix4f M_orth;
     float l = -1, b = -1, n = -3;
     float r = 1, t = 1, f = -6;
+
+    //Ortographic Matrix
     M_orth << 
             2 / (r - l), 0, 0, -(r + l) / (r - l),
             0, 2 / (t - b), 0, -(t + b) / (t - b),
@@ -169,6 +172,7 @@ int main() {
             //Model Matrix
     uniform.M_model = M_scale * M_translation;
 
+    //Wireframe shading case
     if (uniform.shading_option == "Wireframe") {
         for (int i = 0; i < F.rows(); ++i) {
             Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
@@ -183,114 +187,127 @@ int main() {
             vertices.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
             vertices.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
         }
-    // } else if (uniform.shading_option == "Flat") {
-    //     for (int i = 0; i < F.rows(); ++i) {
-    //         Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
-    //         Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
-    //         Eigen::Vector3f normal = A.cross(B).normalized();
-    //         Eigen::Vector4f N(normal(0), normal(1), normal(2), 0);
 
-    //         vertices.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
-    //         vertices.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
-    //         vertices.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
-    //     }
-    //     for (int i = 0; i < F.rows(); ++i) {
-    //         Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
-    //         Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
-    //         Eigen::Vector3f normal = A.cross(B).normalized();
-    //         Eigen::Vector4f N(normal(0), normal(1), normal(2), 0);
+        //Flat shading case
+    } else if (uniform.shading_option == "Flat") {
+        for (int i = 0; i < F.rows(); ++i) {
+            Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
+            Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
+            Eigen::Vector3f normal = A.cross(B).normalized();
+            Eigen::Vector4f N(normal(0), normal(1), normal(2), 0);
 
-    //         vertices2.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
-    //         vertices2.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
-    //         vertices2.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
-    //         vertices2.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
-    //         vertices2.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
-    //         vertices2.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
-    //     }
-    // } else if (uniform.shading_option == "Per-Vertex") {
-    //     Eigen::MatrixXf average_normals;
-    //     average_normals.resize(V.rows(), 4);
-    //     for (int i = 0; i < F.rows(); ++i) {
-    //         Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
-    //         Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
-    //         Eigen::Vector3f normal = A.cross(B).normalized();
-    //         Eigen::Vector4f new_row(normal(0), normal(1), normal(2), 1);
+            vertices.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
+            vertices.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
+            vertices.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
+        }
+        for (int i = 0; i < F.rows(); ++i) {
+            Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
+            Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
+            Eigen::Vector3f normal = A.cross(B).normalized();
+            Eigen::Vector4f N(normal(0), normal(1), normal(2), 0);
 
-    //         average_normals.row(F(i, 0)) += new_row;
-    //         average_normals.row(F(i, 1)) += new_row;
-    //         average_normals.row(F(i, 2)) += new_row;
-    //     }
+            vertices2.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
+            vertices2.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
+            vertices2.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N);
+            vertices2.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
+            vertices2.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N);
+            vertices2.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N);
+        }
+        //Per vertex shading case
+    } else if (uniform.shading_option == "Per-Vertex") {
+        Eigen::MatrixXf average_normals;
+        average_normals.resize(V.rows(), 4);
+        for (int i = 0; i < F.rows(); ++i) {
+            Eigen::Vector3f A = V.row(F(i, 1)) - V.row(F(i, 0));
+            Eigen::Vector3f B = V.row(F(i, 2)) - V.row(F(i, 0));
+            Eigen::Vector3f normal = A.cross(B).normalized();
+            Eigen::Vector4f new_row(normal(0), normal(1), normal(2), 1);
 
-    //     for (int i = 0; i < F.rows(); ++i) {
-    //         Eigen::Vector4f N1(average_normals(F(i, 0), 0) / average_normals(F(i, 0), 3),
-    //                            average_normals(F(i, 0), 1) / average_normals(F(i, 0), 3),
-    //                            average_normals(F(i, 0), 2) / average_normals(F(i, 0), 3), 0);
-    //         vertices.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N1.normalized());
-    //         Eigen::Vector4f N2(average_normals(F(i, 1), 0) / average_normals(F(i, 1), 3),
-    //                            average_normals(F(i, 1), 1) / average_normals(F(i, 1), 3),
-    //                            average_normals(F(i, 1), 2) / average_normals(F(i, 1), 3), 0);
-    //         vertices.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N2.normalized());
-    //         Eigen::Vector4f N3(average_normals(F(i, 2), 0) / average_normals(F(i, 2), 3),
-    //                            average_normals(F(i, 2), 1) / average_normals(F(i, 2), 3),
-    //                            average_normals(F(i, 2), 2) / average_normals(F(i, 2), 3), 0);
-    //         vertices.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N3.normalized());
-    //     }
-    // }
+            average_normals.row(F(i, 0)) += new_row;
+            average_normals.row(F(i, 1)) += new_row;
+            average_normals.row(F(i, 2)) += new_row;
+        }
 
-    // if (uniform.transformation_option) {
-    //     vector<uint8_t> image;
-    //     GifWriter g{};
-    //     GifBegin(&g, "bunny.gif", frameBuffer.rows(), frameBuffer.cols(), 25);
+        //Average normals on the neighboring vertices
+        for (int i = 0; i < F.rows(); ++i) {
+            Eigen::Vector4f N1(average_normals(F(i, 0), 0) / average_normals(F(i, 0), 3),
+                               average_normals(F(i, 0), 1) / average_normals(F(i, 0), 3),
+                               average_normals(F(i, 0), 2) / average_normals(F(i, 0), 3), 0);
+            vertices.emplace_back(V(F(i, 0), 0), V(F(i, 0), 1), V(F(i, 0), 2), 1, N1.normalized());
+            Eigen::Vector4f N2(average_normals(F(i, 1), 0) / average_normals(F(i, 1), 3),
+                               average_normals(F(i, 1), 1) / average_normals(F(i, 1), 3),
+                               average_normals(F(i, 1), 2) / average_normals(F(i, 1), 3), 0);
+            vertices.emplace_back(V(F(i, 1), 0), V(F(i, 1), 1), V(F(i, 1), 2), 1, N2.normalized());
+            Eigen::Vector4f N3(average_normals(F(i, 2), 0) / average_normals(F(i, 2), 3),
+                               average_normals(F(i, 2), 1) / average_normals(F(i, 2), 3),
+                               average_normals(F(i, 2), 2) / average_normals(F(i, 2), 3), 0);
+            vertices.emplace_back(V(F(i, 2), 0), V(F(i, 2), 1), V(F(i, 2), 2), 1, N3.normalized());
+        }
+    }
+    //Exercise 3 
+    //Gifs Construction
+    if (uniform.transformation_option) {
+        vector<uint8_t> image;
+        GifWriter g{};
+        GifBegin(&g, "bunnyTest.gif", frameBuffer.rows(), frameBuffer.cols(), 25);
 
-    //     for (int i = 0; i < 15; i++) {
-    //         frameBuffer.setConstant(FrameBufferAttributes(255, 255, 255));
+        for (int i = 0; i < 15; i++) {
+            frameBuffer.setConstant(FrameBufferAttributes(255, 255, 255));
 
-    //         if (uniform.shading_option == "Wireframe")
-    //             rasterize_lines(program, uniform, vertices, 1, frameBuffer);
-    //         else if (uniform.shading_option == "Flat") {
-    //             rasterize_triangles(program, uniform, vertices, frameBuffer);
-    //             uniform.shading_option = "Wireframe";
-    //             rasterize_lines(program, uniform, vertices2, 1, frameBuffer);
-    //             uniform.shading_option = "Flat";
-    //         } else if (uniform.shading_option == "Per-Vertex")
-    //             rasterize_triangles(program, uniform, vertices, frameBuffer);
+            if (uniform.shading_option == "Wireframe")
+                rasterize_lines(program, uniform, vertices, 1, frameBuffer);
+            else if (uniform.shading_option == "Flat") {
+                rasterize_triangles(program, uniform, vertices, frameBuffer);
+                uniform.shading_option = "Wireframe";
+                rasterize_lines(program, uniform, vertices2, 1, frameBuffer);
+                uniform.shading_option = "Flat";
+            } else if (uniform.shading_option == "Per-Vertex")
+                rasterize_triangles(program, uniform, vertices, frameBuffer);
 
-    //         framebuffer_to_uint8(frameBuffer, image);
-    //         GifWriteFrame(&g, image.data(), frameBuffer.rows(), frameBuffer.cols(), 25);
+            framebuffer_to_uint8(frameBuffer, image);
+            GifWriteFrame(&g, image.data(), frameBuffer.rows(), frameBuffer.cols(), 25);
 
-    //         Eigen::Matrix4f M_rotateX, M_rotateY, M_rotateZ;
-    //         M_rotateX << 1, 0, 0, 0,
-    //                 0, float(cos(M_PI / 5)), float(-sin(M_PI / 5)), 0,
-    //                 0, float(sin(M_PI / 5)), float(cos(M_PI / 5)), 0,
-    //                 0, 0, 0, 1;
-    //         M_rotateY << float(cos(M_PI / 5)), 0, float(sin(M_PI / 5)), 0,
-    //                 0, 1, 0, 0,
-    //                 float(-sin(M_PI / 5)), 0, float(cos(M_PI / 5)), 0,
-    //                 0, 0, 0, 1;
-    //         M_rotateZ << float(cos(M_PI / 5)), float(-sin(M_PI / 5)), 0, 0,
-    //                 float(sin(M_PI / 5)), float(cos(M_PI / 5)), 0, 0,
-    //                 0, 0, 1, 0,
-    //                 0, 0, 0, 1;
-    //         Eigen::Matrix4f M_translate;
-    //         M_translate << 1, 0, 0, w(0) * float(0.1),
-    //                 0, 1, 0, w(1) * float(0.1),
-    //                 0, 0, 1, w(2) * float(0.1),
-    //                 0, 0, 0, 1;
-    //         Eigen::Matrix4f M_moveToOrigin;
-    //         M_moveToOrigin << 1, 0, 0, -w(0) * float(i * 0.1),
-    //                 0, 1, 0, -w(1) * float(i * 0.1),
-    //                 0, 0, 1, -w(2) * float(i * 0.1),
-    //                 0, 0, 0, 1;
-    //         Eigen::Matrix4f M_moveBack;
-    //         M_moveBack << 1, 0, 0, w(0) * float(i * 0.1),
-    //                 0, 1, 0, w(1) * float(i * 0.1),
-    //                 0, 0, 1, w(2) * float(i * 0.1),
-    //                 0, 0, 0, 1;
+            //Rotation Matrix
+            Eigen::Matrix4f M_rotateX, M_rotateY, M_rotateZ;
+            M_rotateX << 
+                    1, 0, 0, 0,
+                    0, float(cos(M_PI / 5)), float(-sin(M_PI / 5)), 0,
+                    0, float(sin(M_PI / 5)), float(cos(M_PI / 5)), 0,
+                    0, 0, 0, 1;
+            M_rotateY << 
+                    float(cos(M_PI / 5)), 0, float(sin(M_PI / 5)), 0,
+                    0, 1, 0, 0,
+                    float(-sin(M_PI / 5)), 0, float(cos(M_PI / 5)), 0,
+                    0, 0, 0, 1;
+            M_rotateZ << 
+                    float(cos(M_PI / 5)), float(-sin(M_PI / 5)), 0, 0,
+                    float(sin(M_PI / 5)), float(cos(M_PI / 5)), 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1;
 
-    //         uniform.M_model = M_translate * M_moveBack * M_rotateY * M_moveToOrigin * uniform.M_model;
-    //     }
-    //     GifEnd(&g);
-    // } else {
+            Eigen::Matrix4f M_translate;
+            M_translate << 
+                    1, 0, 0, w(0) * float(0.1),
+                    0, 1, 0, w(1) * float(0.1),
+                    0, 0, 1, w(2) * float(0.1),
+                    0, 0, 0, 1;
+            Eigen::Matrix4f M_moveToOrigin;
+            M_moveToOrigin << 
+                    1, 0, 0, -w(0) * float(i * 0.1),
+                    0, 1, 0, -w(1) * float(i * 0.1),
+                    0, 0, 1, -w(2) * float(i * 0.1),
+                    0, 0, 0, 1;
+            Eigen::Matrix4f M_moveBack;
+            M_moveBack << 
+                    1, 0, 0, w(0) * float(i * 0.1),
+                    0, 1, 0, w(1) * float(i * 0.1),
+                    0, 0, 1, w(2) * float(i * 0.1),
+                    0, 0, 0, 1;
+
+            uniform.M_model = M_translate * M_moveBack * M_rotateY * M_moveToOrigin * uniform.M_model;
+        }
+        GifEnd(&g);
+    } else {
         if (uniform.shading_option == "Wireframe")
             rasterize_lines(program, uniform, vertices, 1, frameBuffer);
         else if (uniform.shading_option == "Flat") {
